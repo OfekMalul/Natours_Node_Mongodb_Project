@@ -1,12 +1,16 @@
 const User = require('./../models/userModal');
-//2)Route handlers
+const catchAsync = require('./../utils/catchAsync');
 
-exports.getAllUsers = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'yet to be implemented',
+//2)Route handlers
+exports.getAllUsers = catchAsync(async (req, res, next) => {
+  const users = await User.find();
+  res.status(200).json({
+    status: 'success',
+    data: {
+      users,
+    },
   });
-};
+});
 
 exports.createUser = (req, res) => {
   res.status(500).json({

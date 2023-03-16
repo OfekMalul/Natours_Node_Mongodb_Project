@@ -9,11 +9,13 @@ const {
   getTourStats,
   getMonthlyPlan,
 } = require('./../controllers/tourController');
+const { authenticatedUser } = require('./../controllers/authController');
 const router = express.Router();
 
 //creating a middleware that will be invoked upon request of tours with specific id
 // router.param('id', checkId);
-router.route('/').get(getAllTours);
+
+router.route('/').get(authenticatedUser, getAllTours);
 router.route('/top-5-cheap').get(aliasTopTours, getAllTours);
 router.route('/tour-stats').get(getTourStats);
 router.route('/monthly-plan/:year').get(getMonthlyPlan);
