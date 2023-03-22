@@ -1,8 +1,11 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+
 const User = require('./../models/userModal');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const sendMail = require('./../utils/email');
 
 generateJWT = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -14,8 +17,10 @@ exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
+    role: req.body.role,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
+    passwordChangeAt: req.body.passwordChangeAt,
   });
   // Creating jwt when a user singing in. We added a secret and expression time (90 days)
   const token = generateJWT(newUser);
@@ -50,7 +55,7 @@ exports.login = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.authenticatedUser = catchAsync(async (req, res, next) => {
+exports.authenticatesUser = catchAsync(async (req, res, next) => {
   let token = '';
   if (
     req.headers.authorization &&
@@ -67,10 +72,101 @@ exports.authenticatedUser = catchAsync(async (req, res, next) => {
   // it will return us the decoded payload
   // the decode payload holds id, login time, expression date
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  console.log(decoded);
 
-  //checking if the user stil exist
-  const user = await User.findById(decoded.id);
+  // checks if the user stil exist
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
+    return next(
+      new AppError('User beloging to this token does not exist.', 401)
+    );
+  }
+  // checks if the user changed the password after the token was issued
+  // iat is the time of token issued
+  const passwordChanged = currentUser.passwordChanged(decoded.iat);
+  if (passwordChanged) {
+    return next(new AppError('Password changed, log in again.', 401));
+  }
 
+  // user granted access to the protected route
+  req.user = currentUser;
   next();
+});
+
+//passing the roles to the middlware
+exports.restrictTo = (...roles) => {
+  //anonymous middleware
+  return (req, res, next) => {
+    //roles are ['admin','lead-guide']
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError('You must be admin or lead-guide to do this action.', 403)
+      );
+    }
+    next();
+  };
+};
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError(`User is not existed`, 404));
+  }
+  //generating a random token for the user
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false }); // saves the new encryptedResetToken + the expires time to the document
+  // sending email to the user
+  const resetURL = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/users/resetPassword/${resetToken}`;
+
+  const message = `Forgot your password? Submit a PATCH request with your new password and password confirm to:
+   ${resetURL}.\nIf you didnt forget your password please ignore this email`;
+
+  try {
+    await sendMail({
+      email: user.email,
+      subject: 'Your password reset (token is valid for 10 minutes)',
+      message,
+    });
+    res.status(200).json({
+      status: 'success',
+      message: 'Token send to email',
+    });
+  } catch (error) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(
+      new AppError(
+        'There was an error sending the email. Try again later.',
+        500
+      )
+    );
+  }
+});
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gte: Date.now() },
+  });
+  if (!user) {
+    return next(new AppError('Token not found or the token is expired.', 400));
+  }
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+
+  const token = generateJWT(user);
+  res.status(200).json({
+    status: 'success',
+    token,
+  });
 });
