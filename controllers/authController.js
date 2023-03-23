@@ -7,9 +7,19 @@ const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const sendMail = require('./../utils/email');
 
-generateJWT = (user) => {
+const generateJWT = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+};
+
+const createSendToken = (user, statusCode, res) => {
+  // Creating jwt when a user singing/ loging in/ reset password /update password. We added a secret and expression time (90 days)
+  const token = generateJWT(user);
+  return res.status(statusCode).json({
+    status: 'success',
+    token,
+    user,
   });
 };
 
@@ -22,15 +32,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
     passwordChangeAt: req.body.passwordChangeAt,
   });
-  // Creating jwt when a user singing in. We added a secret and expression time (90 days)
-  const token = generateJWT(newUser);
-  res.status(201).json({
-    status: 'success',
-    token,
-    data: {
-      user: newUser,
-    },
-  });
+  createSendToken(newUser, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -44,15 +46,9 @@ exports.login = catchAsync(async (req, res, next) => {
 
   // if no user or the password is incorrect
   if (!user || !(await user.correctPassword(password, user.password))) {
-    return next(new AppError('Email or password is incorrect', 401));
+    return next(new AppError('Password is incorrect', 401));
   }
-
-  const token = generateJWT(user);
-  res.status(200).json({
-    status: 'success',
-    token,
-    user,
-  });
+  createSendToken(user, 200, res);
 });
 
 exports.authenticatesUser = catchAsync(async (req, res, next) => {
@@ -92,7 +88,7 @@ exports.authenticatesUser = catchAsync(async (req, res, next) => {
   next();
 });
 
-//passing the roles to the middlware
+//passing the roles from the router to the middlware
 exports.restrictTo = (...roles) => {
   //anonymous middleware
   return (req, res, next) => {
@@ -164,9 +160,23 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetExpires = undefined;
   await user.save();
 
-  const token = generateJWT(user);
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createSendToken(user, 200, res);
+});
+// we already know that the user exist as we check the user first with authenticatesUser.
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  const { passwordCurrent, password, passwordConfirm } = req.body;
+  const user = await User.findById(req.user._id).select('+password');
+
+  //checks if the users password is correct prior to update
+  if (!(await user.correctPassword(passwordCurrent, user.password))) {
+    return next(new AppError('Incorrect password!', 401));
+  }
+
+  user.password = password;
+  user.passwordConfirm = passwordConfirm;
+
+  // we save and do not use the findOneByIdAndUpdate because our validators will not run and other schema pre mthods will not run as well.
+  await user.save();
+
+  createSendToken(user, 200, res);
 });
