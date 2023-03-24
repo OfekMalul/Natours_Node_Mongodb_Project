@@ -6,11 +6,9 @@ The natours app provide a fully functional Frontend and Backend! The backend was
 
 As this program as of 03/24/2023 runs on a local host you need to provide the following:
 
-# npm i
+npm i
 
-Install the node packages
-
-# Confige file that contains:
+### Confige file that contains:
 
 NODE_ENV=development
 PORT=3000
