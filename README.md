@@ -16,11 +16,11 @@ PORT=3000
 
 -- You can get this from your MongoDB configuration
 
-USERNAME=<MongoDB username>
+USERNAME= MongoDB username
 
-DATABASE_PASSWORD=<MongoDB password>
+DATABASE_PASSWORD= MongoDB password
 
-DATABASE=mongodb+srv://<USERNAME>:<PASSWORD>@cluster0.qnvrsw0.mongodb.net/natours?retryWrites=true&w=majority
+DATABASE=mongodb+srv://{USERNAME}:{PASSWORD}@cluster0.qnvrsw0.mongodb.net/natours?retryWrites=true&w=majority
 
 JWT_SECRET=Natours-Secret-Key-118855-!!\*\*%%
 
