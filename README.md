@@ -8,7 +8,7 @@ As this program as of 03/24/2023 runs on a local host you need to provide the fo
 
 npm i
 
-### Confige file that contains:
+### Add a confige.env file that contains:
 
 NODE_ENV=development
 PORT=3000
