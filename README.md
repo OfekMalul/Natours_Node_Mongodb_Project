@@ -11,19 +11,29 @@ npm i
 ### Add a confige.env file that contains:
 
 NODE_ENV=development
+
 PORT=3000
+
 -- You can get this from your MongoDB configuration
+
 USERNAME=<MongoDB username>
+
 DATABASE_PASSWORD=<MongoDB password>
+
 DATABASE=mongodb+srv://<USERNAME>:<PASSWORD>@cluster0.qnvrsw0.mongodb.net/natours?retryWrites=true&w=majority
 
 JWT_SECRET=Natours-Secret-Key-118855-!!\*\*%%
+
 JWT_EXPIRES_IN=90d
 
 -- You can get this from your mailTrap SMTP settings
+
 EMAIL_USERNAME=yourUserName
+
 EMAIL_PASSWORD=yourPassword
+
 EMAIL_HOST=yourSanboxEmail
+
 EMAIL_PORT = yourPort(should be 25)
 
 # Thank you!
