@@ -44,6 +44,11 @@ const userSchema = new mongoose.Schema({
   passwordChangeAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
 });
 
 //document middleware, runs before the save() and create() method
@@ -60,6 +65,13 @@ userSchema.pre('save', function (next) {
   this.passwordChangeAt = Date.now() - 10000; //ensures that the token created after the passwordChangeAt
   next();
 });
+// this middleware will triger for every query that will start with find (ex' findByIdAndUpdate)
+userSchema.pre(/^find/, function (next) {
+  // the this keyword points to the current query
+  this.find({ active: { $ne: false } });
+  next();
+});
+
 // this is an instance method - meaning the method will be available for all documents within the collection
 userSchema.methods.correctPassword = async function (
   candidatePassword,
