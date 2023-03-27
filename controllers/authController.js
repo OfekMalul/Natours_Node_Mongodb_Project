@@ -16,6 +16,18 @@ const generateJWT = (user) => {
 const createSendToken = (user, statusCode, res) => {
   // Creating jwt when a user singing/ loging in/ reset password /update password. We added a secret and expression time (90 days)
   const token = generateJWT(user);
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    secure: false, // the cookie is sent only on secure enccryption (https)
+    httpOnly: true, // the cookie would not be able to accessed or modified by the browser
+  };
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+  //removing the user password from the response
+  user.password = undefined;
+  res.cookie('jwt', token, cookieOptions);
   return res.status(statusCode).json({
     status: 'success',
     token,
