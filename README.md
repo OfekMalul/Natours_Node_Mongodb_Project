@@ -22,7 +22,7 @@ DATABASE_PASSWORD= MongoDB password
 
 DATABASE=mongodb+srv://{USERNAME}:{PASSWORD}@cluster0.qnvrsw0.mongodb.net/natours?retryWrites=true&w=majority
 
-JWT_SECRET=Natours-Secret-Key-118855-!!\*\*%%
+JWT_SECRET= needs to be 32 characters long
 
 JWT_EXPIRES_IN=90d
 
