@@ -3,6 +3,7 @@ const {
   getAllUsers,
   createUser,
   getUser,
+  updateMe,
   updateUser,
   deleteUser,
 } = require('./../controllers/userController');
@@ -15,17 +16,20 @@ const {
   authenticatesUser,
 } = require('./../controllers/authController');
 
-const route = express.Router();
+const router = express.Router();
 
 //authentication
-route.route('/signup').post(signup);
-route.route('/login').post(login);
-route.route('/forgotPassword').post(forgotPassword);
-route.route('/resetPassword/:token').patch(resetPassword);
-route.route('/updatePassword').patch(authenticatesUser, updatePassword);
+router.route('/signup').post(signup);
+router.route('/login').post(login);
+router.route('/forgotPassword').post(forgotPassword);
+router.route('/resetPassword/:token').patch(resetPassword);
+router.route('/updatePassword').patch(authenticatesUser, updatePassword);
+
+//updating user inforomation
+router.patch('/updateMe', authenticatesUser, updateMe);
 
 //crud operations
-route.route('/').get(getAllUsers).post(createUser);
-route.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
+router.route('/').get(getAllUsers).post(createUser);
+router.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
 
-module.exports = route;
+module.exports = router;
