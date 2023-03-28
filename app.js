@@ -1,5 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 
 const AppError = require('./utils/appError');
 const globalErrorMiddleware = require('./controllers/errorController');
@@ -8,10 +10,19 @@ const userRouter = require('./routes/userRoutes');
 
 const app = express();
 
-//1) middlewares
+//1) global middlewares
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+// dealing with broute force attacks and DOS
+const limiter = rateLimit({
+  max: 100, // max amout of requests
+  windowMs: 60 * 60 * 1000, // a window of an hour in which no more than 100 requests can occur
+  message: 'Too many requests from this IP please try again in an hour.',
+});
+
+app.use('/api', limiter);
 app.use(express.static(`${__dirname}/public`));
 app.use(express.json());
 
