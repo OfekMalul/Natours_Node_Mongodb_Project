@@ -114,6 +114,12 @@ const toursSchema = new mongoose.Schema(
         day: Number,
       },
     ],
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User', //references the User modal -- there is no need to import it to the file.
+      },
+    ],
   },
   {
     //this is the options for our shcema
@@ -134,15 +140,15 @@ toursSchema.pre('save', function (next) {
   next();
 });
 
+// toursSchema.pre('save', async function (next) {
+//   const guidesPromises = this.guides.map(async (id) => await User.findById(id));
+//   this.guides = await Promise.all(guideesPromises);
+//   next();
+// });
 //query middleware, the this key word will point towards the query
 toursSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
   this.start = Date.now();
-  next();
-});
-
-toursSchema.post(/^find/, function (docs, next) {
-  console.log(Date.now() - this.start);
   next();
 });
 
@@ -151,6 +157,21 @@ toursSchema.pre('aggregate', function (next) {
   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
   next();
 });
+
+// query middleware, responsible to populate the guide fields with referece user inforamtion.
+toursSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangeAt',
+  });
+  next();
+});
+
+toursSchema.post(/^find/, function (docs, next) {
+  console.log(Date.now() - this.start);
+  next();
+});
+
 //here we are creating a modal from the toursSchema
 const Tour = mongoose.model('Tour', toursSchema);
 
