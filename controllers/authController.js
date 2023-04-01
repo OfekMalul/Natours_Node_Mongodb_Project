@@ -104,10 +104,14 @@ exports.authenticatesUser = catchAsync(async (req, res, next) => {
 exports.restrictTo = (...roles) => {
   //anonymous middleware
   return (req, res, next) => {
-    //roles are ['admin','lead-guide']
     if (!roles.includes(req.user.role)) {
       return next(
-        new AppError('You must be admin or lead-guide to do this action.', 403)
+        new AppError(
+          `You must be ${roles.length > 1 ? 'an' : 'a'} ${roles.join(
+            ' or '
+          )} to do this action.`,
+          403
+        )
       );
     }
     next();
