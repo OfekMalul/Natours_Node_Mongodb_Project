@@ -134,6 +134,13 @@ toursSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
+//virtual populate
+toursSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour', // this is the forign key in the review modal
+  localField: '_id', // this is the primary key in the tours modal
+});
+
 //document middleware, runs before the save() and create() method
 toursSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
