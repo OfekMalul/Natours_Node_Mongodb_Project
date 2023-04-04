@@ -15,8 +15,8 @@ const {
 } = require('./../controllers/authController');
 const router = express.Router();
 
-//creating a middleware that will be invoked upon request of tours with specific id
-// router.param('id', checkId);
+const reviewRouter = require('./../routes/reviewRoutes');
+router.use('/:tourId/reviews', reviewRouter); //continues the route in the reviewRoutes
 
 router.route('/').get(authenticatesUser, getAllTours);
 router.route('/top-5-cheap').get(aliasTopTours, getAllTours);
