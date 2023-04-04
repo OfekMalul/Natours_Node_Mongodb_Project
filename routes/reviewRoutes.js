@@ -2,6 +2,7 @@ const expresss = require('express');
 const {
   getAllReviews,
   createReview,
+  updateReview,
   deleteReview,
 } = require('./../controllers/reviewController');
 const {
@@ -12,6 +13,6 @@ const router = expresss.Router({ mergeParams: true }); // allows the params to g
 
 router.route('/').get(getAllReviews);
 router.route('/').post(authenticatesUser, restrictTo('user'), createReview);
-router.route('/:id').delete(deleteReview);
+router.route('/:id').patch(updateReview).delete(deleteReview);
 
 module.exports = router;

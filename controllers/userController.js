@@ -76,18 +76,6 @@ exports.getUser = (req, res) => {
   });
 };
 
-exports.updateUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'yet to be implemented',
-  });
-};
-
+// updateUser is not suitable to update user password
+exports.updateUser = factory.updateOne(User);
 exports.deleteUser = factory.deleteOne(User);
-
-// exports.deleteUser = (req, res) => {
-//   res.status(500).json({
-//     status: 'error',
-//     message: 'yet to be implemented',
-//   });
-// };

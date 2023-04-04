@@ -13,3 +13,28 @@ exports.deleteOne = (Model) => {
     });
   });
 };
+
+exports.updateOne = (Model) => {
+  return catchAsync(async (req, res, next) => {
+    // we finding the document by id, then updating it by the info we get from the req.body.
+    // The third parameter is known as options. new = true means we return the new updated tour to the client.
+    // runValidators validates the new information is accpetable by the schema.
+    const updateDocument = await Model.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    if (!updateDocument) {
+      return next(new AppError('Document not found', 404));
+    }
+    res.status(200).json({
+      status: 'success',
+      data: {
+        data: updateDocument,
+      },
+    });
+  });
+};
