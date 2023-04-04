@@ -4,6 +4,7 @@ const {
   createReview,
   updateReview,
   deleteReview,
+  setTourUserIds,
 } = require('./../controllers/reviewController');
 const {
   restrictTo,
@@ -12,7 +13,9 @@ const {
 const router = expresss.Router({ mergeParams: true }); // allows the params to go through, for ex' the tour id from the tours router.
 
 router.route('/').get(getAllReviews);
-router.route('/').post(authenticatesUser, restrictTo('user'), createReview);
+router
+  .route('/')
+  .post(authenticatesUser, restrictTo('user'), setTourUserIds, createReview);
 router.route('/:id').patch(updateReview).delete(deleteReview);
 
 module.exports = router;

@@ -15,18 +15,12 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
     },
   });
 });
-
-exports.createReview = catchAsync(async (req, res, next) => {
+exports.setTourUserIds = (req, res, next) => {
   if (!req.body.tour) req.body.tour = req.params.tourId; // we get this from the parameter
   if (!req.body.user) req.body.user = req.user.id; // we gets this one from the authenticate middleware
-  const newReview = await Review.create(req.body);
-  res.status(201).json({
-    status: 'success',
-    data: {
-      review: newReview,
-    },
-  });
-});
+  next();
+};
+exports.createReview = factory.createOne(Review);
 
 exports.updateReview = factory.updateOne(Review);
 exports.deleteReview = factory.deleteOne(Review);

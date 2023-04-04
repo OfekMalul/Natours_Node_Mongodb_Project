@@ -76,6 +76,6 @@ exports.getUser = (req, res) => {
   });
 };
 
-// updateUser is not suitable to update user password
+// updateUser is not suitable to update user
 exports.updateUser = factory.updateOne(User);
 exports.deleteUser = factory.deleteOne(User);
