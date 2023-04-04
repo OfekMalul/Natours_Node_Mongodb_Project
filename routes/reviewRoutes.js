@@ -2,6 +2,7 @@ const expresss = require('express');
 const {
   getAllReviews,
   createReview,
+  deleteReview,
 } = require('./../controllers/reviewController');
 const {
   restrictTo,
@@ -11,5 +12,6 @@ const router = expresss.Router({ mergeParams: true }); // allows the params to g
 
 router.route('/').get(getAllReviews);
 router.route('/').post(authenticatesUser, restrictTo('user'), createReview);
+router.route('/:id').delete(deleteReview);
 
 module.exports = router;
