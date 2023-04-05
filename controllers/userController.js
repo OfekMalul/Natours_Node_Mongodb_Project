@@ -15,15 +15,6 @@ const filterObj = (userObj, ...allowedFields) => {
 };
 
 //2)Route handlers
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find();
-  res.status(200).json({
-    status: 'success',
-    data: {
-      users,
-    },
-  });
-});
 
 exports.createUser = (req, res) => {
   res.status(500).json({
@@ -69,6 +60,7 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.getAllUsers = factory.getAll(User);
 exports.getUser = factory.getOne(User);
 // updateUser is not suitable to update user
 exports.updateUser = factory.updateOne(User);
