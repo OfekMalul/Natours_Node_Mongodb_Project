@@ -36,4 +36,10 @@ EMAIL_HOST=yourSanboxEmail
 
 EMAIL_PORT = yourPort(should be 25)
 
+### Add the data to your database:
+
+# run this in order to get all the data that is stores in the json files into your database.
+
+node ./dev-data/data/import-dev-data.js --import
+
 # Thank you!
