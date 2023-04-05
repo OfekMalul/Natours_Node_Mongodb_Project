@@ -3,6 +3,7 @@ const {
   getAllUsers,
   createUser,
   getUser,
+  getMe,
   updateMe,
   deleteMe,
   updateUser,
@@ -26,7 +27,8 @@ router.route('/forgotPassword').post(forgotPassword);
 router.route('/resetPassword/:token').patch(resetPassword);
 router.route('/updatePassword').patch(authenticatesUser, updatePassword);
 
-//updating user inforomation
+//updating or getting the current user inforomation
+router.get('/me', authenticatesUser, getMe, getUser);
 router.patch('/updateMe', authenticatesUser, updateMe);
 router.route('/deleteMe').delete(authenticatesUser, deleteMe);
 
