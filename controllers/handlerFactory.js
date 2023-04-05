@@ -50,3 +50,18 @@ exports.deleteOne = (Model) => {
     });
   });
 };
+
+exports.getOne = (Model, populateOptions) => {
+  return catchAsync(async (req, res, next) => {
+    let query = Model.findById(req.params.id);
+    if (populateOptions) query = query.populate(populateOptions);
+    const doc = await query;
+    if (!doc) {
+      return next(new AppError('Document not found', 404));
+    }
+    res.status(200).json({
+      status: 'Success',
+      data: doc,
+    });
+  });
+};

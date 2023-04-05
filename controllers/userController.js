@@ -69,13 +69,7 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'yet to be implemented',
-  });
-};
-
+exports.getUser = factory.getOne(User);
 // updateUser is not suitable to update user
 exports.updateUser = factory.updateOne(User);
 exports.deleteUser = factory.deleteOne(User);
