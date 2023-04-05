@@ -18,17 +18,23 @@ const router = express.Router();
 const reviewRouter = require('./../routes/reviewRoutes');
 router.use('/:tourId/reviews', reviewRouter); //continues the route in the reviewRoutes
 
-router.route('/').get(authenticatesUser, getAllTours);
-router.route('/top-5-cheap').get(aliasTopTours, getAllTours);
-router.route('/tour-stats').get(getTourStats);
-router.route('/monthly-plan/:year').get(getMonthlyPlan);
 router
   .route('/')
   .get(getAllTours)
   .post(authenticatesUser, restrictTo('admin', 'lead-guide'), createTour);
+router.route('/top-5-cheap').get(aliasTopTours, getAllTours);
+router.route('/tour-stats').get(getTourStats);
+router
+  .route('/monthly-plan/:year')
+  .get(
+    authenticatesUser,
+    restrictTo('admin', 'lead-guide', 'guide'),
+    getMonthlyPlan
+  );
+
 router
   .route('/:id')
   .get(getTour)
-  .patch(updateTour)
+  .patch(authenticatesUser, restrictTo('admin', 'lead-guide'), updateTour)
   .delete(authenticatesUser, restrictTo('admin', 'lead-guide'), deleteTour);
 module.exports = router;
