@@ -36,6 +36,9 @@ const reviewsSchema = new mongoose.Schema(
   }
 );
 
+// achives that each tour can only have one review from each user. // 1 means that it is asc order
+reviewsSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 reviewsSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'user',
@@ -71,6 +74,7 @@ reviewsSchema.statics.calcAverageRatings = async function (tourId) {
     });
   }
 };
+
 // post middlewear as we wish the document to save to the db first
 reviewsSchema.post('save', function () {
   // this points to the current review
