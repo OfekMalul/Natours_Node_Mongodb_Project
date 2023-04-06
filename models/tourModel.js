@@ -158,18 +158,18 @@ toursSchema.pre('save', function (next) {
 //   this.guides = await Promise.all(guideesPromises);
 //   next();
 // });
-//query middleware, the this key word will point towards the query
+//query middleware, the this keyword will point towards the query
 toursSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
   this.start = Date.now();
   next();
 });
 
-//aggregation middleware, the this key word will point towards the aggregate object
-toursSchema.pre('aggregate', function (next) {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-  next();
-});
+//aggregation middleware, the this keyword point towards the aggregate object
+// toursSchema.pre('aggregate', function (next) {
+//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+//   next();
+// });
 
 // query middleware, responsible to populate the guide fields with referece user inforamtion.
 toursSchema.pre(/^find/, function (next) {

@@ -93,14 +93,13 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
   });
 });
 
-// router.route('/tours-within/:distance/center/:latlng/unit/:unit',getToursWithin);
 exports.getToursWithin = catchAsync(async (req, res, next) => {
   const { distance, latlng, unit } = req.params;
   const [lat, lng] = latlng.split(',');
   const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
 
   if (!lat || !lng) {
-    next(new AppError('Please provide langtitude and latitude', 400));
+    next(new AppError('Please provide langtitude and longtitude', 400));
   }
 
   const tours = await Tour.find({
@@ -112,6 +111,43 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
     results: tours.length,
     data: {
       tours,
+    },
+  });
+});
+
+exports.getDistances = catchAsync(async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+  if (!lat || !lng) {
+    next(new AppError('Please provide latitude and longtitude', 400));
+  }
+  const distances = await Tour.aggregate([
+    {
+      // always first at geospatial aggregation, requires that at least one of the fields geospatial index
+      // if we have only one geospatial index then it will automatically by used (for us it is startLocation)
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [lng * 1, lat * 1],
+        },
+        // calculated distance will be stored in this field
+        distanceField: 'distance',
+        distanceMultiplier: multiplier,
+      },
+    },
+    {
+      // Allowes to specify which fields would we like to see
+      $project: {
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      distances,
     },
   });
 });
