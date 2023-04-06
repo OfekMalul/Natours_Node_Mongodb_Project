@@ -98,7 +98,7 @@ const toursSchema = new mongoose.Schema(
         default: 'Point',
         enum: ['Point'],
       },
-      cordinates: [Number], // types is array of numbers.
+      coordinates: [Number], // types is array of numbers.
       address: String,
       desctiption: String,
     },
@@ -110,7 +110,7 @@ const toursSchema = new mongoose.Schema(
           default: 'Point',
           enum: ['Point'],
         },
-        cordinates: [Number],
+        coordinates: [Number],
         address: String,
         desctiption: String,
         day: Number,
@@ -132,6 +132,7 @@ const toursSchema = new mongoose.Schema(
 // indexing the tour schema accoriding to ascending price and descending ratings
 toursSchema.index({ price: 1, ratingsAverage: -1 });
 toursSchema.index({ slug: 1 });
+toursSchema.index({ startLocation: '2dsphere' });
 
 //The virtual property will be created each time we getting data from our db
 // we use a regular function expression as we need the this keyword that refers to the current document
