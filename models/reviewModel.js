@@ -53,17 +53,23 @@ reviewsSchema.statics.calcAverageRatings = async function (tourId) {
     },
     {
       $group: {
-        _id: '$tour',
+        _id: '$tour', // this is the tour id that comes from the review
         nRatings: { $sum: 1 },
         avgRatings: { $avg: '$rating' },
       },
     },
   ]);
-  console.log(stats);
-  await Tour.findByIdAndUpdate(tourId, {
-    ratingsAverage: stats[0].avgRatings,
-    ratingsQuantity: stats[0].nRatings,
-  });
+  if (stats.length > 0) {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsAverage: stats[0].avgRatings,
+      ratingsQuantity: stats[0].nRatings,
+    });
+  } else {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsAverage: 4.5,
+      ratingsQuantity: 0,
+    });
+  }
 };
 // post middlewear as we wish the document to save to the db first
 reviewsSchema.post('save', function () {
@@ -72,5 +78,16 @@ reviewsSchema.post('save', function () {
 
   this.constructor.calcAverageRatings(this.tour);
 });
+
+reviewsSchema.pre(/findOneAnd/, async function (next) {
+  // this keyword points to a query
+  this.rReview = await this.findOne(); // this.rReview now is the document that was found
+  next();
+});
+
+reviewsSchema.post(/^findOneAnd/, async function () {
+  await this.rReview.constructor.calcAverageRatings(this.rReview.tour);
+});
+
 const Review = mongoose.model('Review', reviewsSchema);
 module.exports = Review;

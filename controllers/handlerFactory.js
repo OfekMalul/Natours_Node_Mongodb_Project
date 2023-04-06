@@ -78,7 +78,7 @@ exports.getAll = (Model) => {
       .sort()
       .limitFields()
       .pagination();
-    const docs = await features.query.explain();
+    const docs = await features.query;
     //Send Response
     res.status(200).json({
       status: 'Success',
