@@ -42,4 +42,8 @@ EMAIL_PORT = yourPort(should be 25)
 
 node ./dev-data/data/import-dev-data.js --import
 
+### Natours API is published on postman
+
+https://documenter.getpostman.com/view/25389695/2s93XsXRfm
+
 # Thank you!
