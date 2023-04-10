@@ -70,7 +70,7 @@ const toursSchema = new mongoose.Schema(
       trim: true,
       required: [true, 'A tour must have a summary'],
     },
-    desctiption: {
+    description: {
       type: String,
       trim: true,
     },
@@ -92,6 +92,7 @@ const toursSchema = new mongoose.Schema(
       default: false,
     },
     startLocation: {
+      description: String,
       //GeoJson
       type: {
         type: String, // the type must to be a point type
@@ -100,7 +101,6 @@ const toursSchema = new mongoose.Schema(
       },
       coordinates: [Number], // types is array of numbers.
       address: String,
-      desctiption: String,
     },
     locations: [
       //GeoJson
