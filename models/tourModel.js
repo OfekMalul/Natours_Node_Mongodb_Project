@@ -149,6 +149,7 @@ toursSchema.virtual('reviews', {
 
 //document middleware, runs before the save() and create() method
 toursSchema.pre('save', function (next) {
+  // defining a new property, slug
   this.slug = slugify(this.name, { lower: true });
   next();
 });
