@@ -9,13 +9,13 @@ const login = async (email, password) => {
       },
     });
     if (res.data.status === 'success') {
-      alert('Logged in');
+      showAlert('success', 'You are logged in');
       window.setTimeout(() => {
         location.assign('/');
       }, 1000);
     }
   } catch (error) {
-    alert(error.response.data.message);
+    showAlert('error', JSON.stringify(error.response.data.message));
   }
 };
 
@@ -25,3 +25,15 @@ document.querySelector('.form').addEventListener('submit', (e) => {
   const password = document.getElementById('password').value;
   login(email, password);
 });
+
+const hideAlert = () => {
+  const el = document.querySelector('.alert');
+  if (el) el.parentElement.removeChild(el);
+};
+
+const showAlert = (type, message) => {
+  hideAlert();
+  const markup = `<div class='alert alert--${type}'>${message}</div>`;
+  document.querySelector('body').insertAdjacentHTML('afterbegin', markup);
+  window.setTimeout(hideAlert, 5000);
+};
