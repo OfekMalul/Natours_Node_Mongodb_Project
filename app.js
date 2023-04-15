@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
 
 const AppError = require('./utils/appError');
 const globalErrorMiddleware = require('./controllers/errorController');
@@ -37,6 +38,8 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 // Reading data from the body into req.body
 app.use(express.json({ limit: '10kb' }));
+//parsing the data from the cookie
+app.use(cookieParser());
 
 // serving static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -60,6 +63,14 @@ app.use(
     ],
   })
 );
+
+app.use(function (req, res, next) {
+  res.setHeader(
+    'Content-Security-Policy',
+    "script-src 'self' https://cdnjs.cloudflare.com"
+  );
+  next();
+});
 
 // Test middleware
 app.use((req, res, next) => {
