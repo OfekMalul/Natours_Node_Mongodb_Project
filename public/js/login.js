@@ -8,9 +8,14 @@ const login = async (email, password) => {
         password,
       },
     });
-    alert(res.data.message);
+    if (res.data.status === 'success') {
+      alert('Logged in');
+      window.setTimeout(() => {
+        location.assign('/');
+      }, 1000);
+    }
   } catch (error) {
-    alert('You are logged in');
+    alert(error.response.data.message);
   }
 };
 

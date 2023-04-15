@@ -102,6 +102,32 @@ exports.authenticatesUser = catchAsync(async (req, res, next) => {
   next();
 });
 
+// Only for rendered pages
+exports.isLoggedIn = catchAsync(async (req, res, next) => {
+  if (req.cookies.jwt) {
+    // verify the token
+    const decoded = await promisify(jwt.verify)(
+      req.cookies.jwt,
+      process.env.JWT_SECRET
+    );
+
+    // checks if the user stil exist
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+      return next();
+    }
+    // checks if the user changed the password after the token was issued
+    const passwordChanged = currentUser.passwordChanged(decoded.iat);
+    if (passwordChanged) {
+      return next();
+    }
+    // There is a logged in user
+    res.locals.user = currentUser; // each pug tempalte have access to res.locals
+    return next();
+  }
+  next();
+});
+
 //passing the roles from the router to the middlware
 exports.restrictTo = (...roles) => {
   //anonymous middleware
