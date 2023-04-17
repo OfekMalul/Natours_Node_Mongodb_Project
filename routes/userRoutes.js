@@ -12,6 +12,7 @@ const {
 const {
   signup,
   login,
+  logout,
   forgotPassword,
   resetPassword,
   updatePassword,
@@ -24,6 +25,7 @@ const router = express.Router();
 //authentication
 router.route('/signup').post(signup);
 router.route('/login').post(login);
+router.route('/logout').get(logout);
 router.route('/forgotPassword').post(forgotPassword);
 router.route('/resetPassword/:token').patch(resetPassword);
 router.route('/updatePassword').patch(authenticatesUser, updatePassword);

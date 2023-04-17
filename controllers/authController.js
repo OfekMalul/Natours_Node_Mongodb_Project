@@ -63,6 +63,14 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+exports.logout = (req, res) => {
+  res.cookie('jwt', 'logout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({ status: 'success' });
+};
+
 exports.authenticatesUser = catchAsync(async (req, res, next) => {
   let token = '';
   if (
@@ -103,30 +111,34 @@ exports.authenticatesUser = catchAsync(async (req, res, next) => {
 });
 
 // Only for rendered pages
-exports.isLoggedIn = catchAsync(async (req, res, next) => {
+exports.isLoggedIn = async (req, res, next) => {
   if (req.cookies.jwt) {
-    // verify the token
-    const decoded = await promisify(jwt.verify)(
-      req.cookies.jwt,
-      process.env.JWT_SECRET
-    );
+    try {
+      // verify the token
+      const decoded = await promisify(jwt.verify)(
+        req.cookies.jwt,
+        process.env.JWT_SECRET
+      );
 
-    // checks if the user stil exist
-    const currentUser = await User.findById(decoded.id);
-    if (!currentUser) {
+      // checks if the user stil exist
+      const currentUser = await User.findById(decoded.id);
+      if (!currentUser) {
+        return next();
+      }
+      // checks if the user changed the password after the token was issued
+      const passwordChanged = currentUser.passwordChanged(decoded.iat);
+      if (passwordChanged) {
+        return next();
+      }
+      // There is a logged in user
+      res.locals.user = currentUser; // each pug tempalte have access to res.locals
+      return next();
+    } catch (err) {
       return next();
     }
-    // checks if the user changed the password after the token was issued
-    const passwordChanged = currentUser.passwordChanged(decoded.iat);
-    if (passwordChanged) {
-      return next();
-    }
-    // There is a logged in user
-    res.locals.user = currentUser; // each pug tempalte have access to res.locals
-    return next();
   }
   next();
-});
+};
 
 //passing the roles from the router to the middlware
 exports.restrictTo = (...roles) => {
