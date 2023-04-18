@@ -2,6 +2,7 @@
 const formLogin = document.querySelector('.form--login');
 const logoutBtn = document.querySelector('.nav__el--logout');
 const formUserData = document.querySelector('.form-user-data');
+const settingsFormData = document.querySelector('.form-user-settings');
 
 const login = async (email, password) => {
   try {
@@ -31,8 +32,10 @@ const logout = async () => {
       url: 'http://127.0.0.1:3000/api/v1/users/logout',
     });
     if (res.data.status === 'success') {
-      location.reload(true);
-      location.assign('/login');
+      window.setTimeout(() => {
+        location.reload(true);
+        location.assign('/login');
+      }, 1000);
     }
   } catch (error) {
     showAlert('error', 'Error logging out try again');
@@ -64,20 +67,19 @@ const showAlert = (type, message) => {
   window.setTimeout(hideAlert, 5000);
 };
 
-//update data function
-const updateData = async (name, email) => {
+//update data function, type is password or data
+const updateSettings = async (data, type) => {
   try {
     const res = await axios({
       method: 'PATCH',
-      url: 'http://127.0.0.1:3000/api/v1/users/updateMe',
-      data: {
-        name,
-        email,
-      },
+      url:
+        type === 'password'
+          ? 'http://127.0.0.1:3000/api/v1/users/updatePassword'
+          : 'http://127.0.0.1:3000/api/v1/users/updateMe',
+      data,
     });
     if (res.data.status === 'success') {
-      showAlert('success', 'Account details updated successfully');
-      location.reload(true);
+      showAlert('success', `Account ${type} successfully updated!`);
     }
   } catch (err) {
     showAlert('error', err.response.data.message);
@@ -89,6 +91,25 @@ if (formUserData) {
     e.preventDefault();
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
-    updateData(name, email);
+    updateSettings({ name, email }, 'data');
+  });
+}
+
+if (settingsFormData) {
+  settingsFormData.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    document.querySelector('.btn--save--password').textContent = 'Updating....';
+    const passwordCurrent = document.getElementById('password-current').value;
+    const password = document.getElementById('password').value;
+    const passwordConfirm = document.getElementById('password-confirm').value;
+    await updateSettings(
+      { passwordCurrent, password, passwordConfirm },
+      'password'
+    );
+    document.querySelector('.btn--save--password').textContent =
+      'Save Password';
+    document.getElementById('password-current').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('password-confirm').value = '';
   });
 }
