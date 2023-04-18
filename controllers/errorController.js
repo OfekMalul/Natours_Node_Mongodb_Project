@@ -26,36 +26,57 @@ const handleExpiredError = () => {
 };
 
 const sendErrorDev = (err, req, res) => {
-  // this is for api
+  // A) this is for api
   if (req.originalUrl.startsWith('/api')) {
-    res.status(err.statusCode).json({
+    // we are returning as we want to make sure that the req res cycle ends after the error handeling.
+    return res.status(err.statusCode).json({
       status: err.status,
       message: err.message,
       stack: err.stack,
       error: err,
     });
-  } else {
-    // this is for rendered website
+  }
+  // B) this is for rendered website
+  return res.status(err.statusCode).render('error', {
+    title: 'Something went wrong!',
+    msg: err.message,
+  });
+};
+
+const sendErrorProd = (err, req, res) => {
+  // A) This if for api
+  if (req.originalUrl.startsWith('/api')) {
+    // operational error
+    if (err.isOperational) {
+      // we are returning as we want to make sure that the req res cycle ends after the error handeling.
+      return res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message,
+      });
+    }
+    // programming or unkonwn error
+    console.error(`Error! ` + JSON.stringify(err));
+    return res.status(500).json({
+      status: 'error',
+      message: 'Something went wrong',
+    });
+  }
+
+  // B) This is for rendered website
+  // operational error
+  console.log(err.message);
+  if (err.isOperational) {
+    console.log(err);
     res.status(err.statusCode).render('error', {
       title: 'Something went wrong!',
       msg: err.message,
     });
-  }
-};
-
-const sendErrorProd = (err, res) => {
-  // operational error
-  if (err.isOperational) {
-    res.status(err.statusCode).json({
-      status: err.status,
-      message: err.message,
-    });
-    // programming or unkonwn error
   } else {
+    // programming or unkonwn error
     console.error(`Error! ` + JSON.stringify(err));
-    res.status(500).json({
-      status: 'error',
-      message: 'Something went wrong',
+    return res.status(err.statusCode).render('error', {
+      title: 'Something went wrong!',
+      msg: 'Please try again later.',
     });
   }
 };
@@ -69,6 +90,7 @@ module.exports = (err, req, res, next) => {
   } else if (process.env.NODE_ENV === 'production') {
     // making a hard copy of the err
     let error = { ...err };
+    error.message = err.message;
     // we are getting the name, code from MongoDB errors
     if (err.name === 'CastError') error = handleCastErrorDB(error);
     if (err.code === 11000) error = handleDuplicateFieldsDB(error);
