@@ -1,6 +1,7 @@
 //DOM ELEMENTS
-const formLogin = document.querySelector('.form');
+const formLogin = document.querySelector('.form--login');
 const logoutBtn = document.querySelector('.nav__el--logout');
+const formUserData = document.querySelector('.form-user-data');
 
 const login = async (email, password) => {
   try {
@@ -31,6 +32,7 @@ const logout = async () => {
     });
     if (res.data.status === 'success') {
       location.reload(true);
+      location.assign('/login');
     }
   } catch (error) {
     showAlert('error', 'Error logging out try again');
@@ -61,3 +63,32 @@ const showAlert = (type, message) => {
   document.querySelector('body').insertAdjacentHTML('afterbegin', markup);
   window.setTimeout(hideAlert, 5000);
 };
+
+//update data function
+const updateData = async (name, email) => {
+  try {
+    const res = await axios({
+      method: 'PATCH',
+      url: 'http://127.0.0.1:3000/api/v1/users/updateMe',
+      data: {
+        name,
+        email,
+      },
+    });
+    if (res.data.status === 'success') {
+      showAlert('success', 'Account details updated successfully');
+      location.reload(true);
+    }
+  } catch (err) {
+    showAlert('error', err.response.data.message);
+  }
+};
+
+if (formUserData) {
+  formUserData.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    updateData(name, email);
+  });
+}
