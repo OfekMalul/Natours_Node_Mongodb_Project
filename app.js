@@ -38,6 +38,7 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 // Reading data from the body into req.body
 app.use(express.json({ limit: '10kb' }));
+// eanble us to receive data from a form.
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 //parsing the data from the cookie
 app.use(cookieParser());

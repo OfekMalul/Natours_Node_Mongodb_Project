@@ -2,6 +2,37 @@ const AppError = require('../utils/appError');
 const User = require('./../models/userModal');
 const catchAsync = require('./../utils/catchAsync');
 const factory = require('./handlerFactory');
+const multer = require('multer');
+
+const multerStorage = multer.diskStorage({
+  // has access to the request, current file, and a callback function
+  destination: (req, file, cb) => {
+    // the callback receives an error (if there is any) and the destination
+    cb(null, 'public/img/users');
+  },
+  filename: (req, file, cb) => {
+    // looks to get a unique identifier
+    const ext = file.mimetype.split('/')[1];
+    cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
+  },
+});
+
+// tests if the current upload file is indeed an image
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an image! Please upload only images', 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+//upload.single(field), the single means we are only gettin 1 single file and not multiple
+exports.uploadUserPhoto = upload.single('photo');
 
 const filterObj = (userObj, ...allowedFields) => {
   const fields = [...allowedFields];
@@ -30,6 +61,7 @@ exports.createUser = (req, res) => {
 
 // This functionality is to update data about the user
 exports.updateMe = catchAsync(async (req, res, next) => {
+  console.log(req.file);
   // create an error if the user tries to update the passwrod
   if (req.body.password || req.body.passwordConfirm) {
     return next(

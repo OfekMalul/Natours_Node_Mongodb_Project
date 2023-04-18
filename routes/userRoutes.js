@@ -8,6 +8,7 @@ const {
   deleteMe,
   updateUser,
   deleteUser,
+  uploadUserPhoto,
 } = require('./../controllers/userController');
 const {
   signup,
@@ -35,7 +36,7 @@ router.use(authenticatesUser);
 
 //updating or getting the current user inforomation
 router.get('/me', getMe, getUser);
-router.patch('/updateMe', updateMe);
+router.patch('/updateMe', uploadUserPhoto, updateMe);
 router.route('/deleteMe').delete(deleteMe);
 
 // All the routes bellow would be accessed only by an admin
