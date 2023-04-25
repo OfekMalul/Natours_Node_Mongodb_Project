@@ -1,21 +1,25 @@
+const multer = require('multer');
+const sharp = require('sharp');
 const AppError = require('../utils/appError');
 const User = require('./../models/userModal');
 const catchAsync = require('./../utils/catchAsync');
 const factory = require('./handlerFactory');
-const multer = require('multer');
 
-const multerStorage = multer.diskStorage({
-  // has access to the request, current file, and a callback function
-  destination: (req, file, cb) => {
-    // the callback receives an error (if there is any) and the destination
-    cb(null, 'public/img/users');
-  },
-  filename: (req, file, cb) => {
-    // looks to get a unique identifier
-    const ext = file.mimetype.split('/')[1];
-    cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
-  },
-});
+// const multerStorage = multer.diskStorage({
+//   // has access to the request, current file, and a callback function
+//   destination: (req, file, cb) => {
+//     // the callback receives an error (if there is any) and the destination
+//     cb(null, 'public/img/users');
+//   },
+//   filename: (req, file, cb) => {
+//     // looks to get a unique identifier
+//     const ext = file.mimetype.split('/')[1];
+//     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
+//   },
+// });
+
+// for image processing it is best not to save the file to the disk but to the memory
+const multerStorage = multer.memoryStorage();
 
 // tests if the current upload file is indeed an image
 const multerFilter = (req, file, cb) => {
@@ -33,6 +37,20 @@ const upload = multer({
 
 //upload.single(field), the single means we are only gettin 1 single file and not multiple
 exports.uploadUserPhoto = upload.single('photo');
+
+exports.resizeUserPhoto = (req, res, next) => {
+  // if there is no file uploaded to resize
+  if (!req.file) return next();
+
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+  sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/users/${req.file.filename}`);
+  next();
+};
 
 const filterObj = (userObj, ...allowedFields) => {
   const fields = [...allowedFields];
