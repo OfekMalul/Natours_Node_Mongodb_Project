@@ -22,7 +22,7 @@ const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image')) {
     cb(null, true);
   } else {
-    cb(new AppError('Not an image! Please upload only images', 400), false);
+    cb(new AppError('You can only upload images!', 400), false);
   }
 };
 
@@ -75,6 +75,8 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   // there is no need to run validatiors as we dont change password
   // we getting the user from the authenticatesUser that runs before this function
   const filteredBody = filterObj(req.body, 'name', 'email'); // we dont want to let the user to update all the fields that he pass in the body so we filter it.
+  if (req.file) filteredBody.photo = req.file.filename;
+
   const updatedUser = await User.findByIdAndUpdate(req.user._id, filteredBody, {
     // runValidatiors set to true means we going to run the validators in the schema.
     // new set to true, returns the update document to the user
