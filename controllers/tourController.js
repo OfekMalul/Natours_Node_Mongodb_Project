@@ -1,7 +1,63 @@
+const multer = require('multer');
+const sharp = require('sharp');
 const AppError = require('./../utils/appError');
 const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
 const factory = require('./handlerFactory');
+
+// for image processing it is best not to save the file to the disk but to the memory
+const multerStorage = multer.memoryStorage();
+
+// tests if the current upload file is indeed an image
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('You can only upload images!', 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+exports.uplodaTourImages = upload.fields([
+  { name: 'imageCover', maxCount: 1 },
+  { name: 'images', maxCount: 3 },
+]);
+
+exports.resizeTourImages = catchAsync(async (req, res, next) => {
+  // if there is no images to upload than go to the next middleware
+  if (!req.files.imageCover || !req.files.images) next();
+
+  // 1) cover image upload
+  req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
+  await sharp(req.files.imageCover[0].buffer)
+    .resize(2000, 1333)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/tours/${req.body.imageCover}`);
+
+  // 2) tour images upload
+  req.body.images = [];
+
+  // we use map in order to save all the promises.
+  // then we wait for all the promises to be resolved and only then moving to the next middleware
+  await Promise.all(
+    req.files.images.map(async (image, i) => {
+      const imageFileName = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
+      await sharp(image.buffer)
+        .resize(2000, 1333)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/img/tours/${imageFileName}`);
+
+      req.body.images.push(imageFileName);
+    })
+  );
+  next();
+});
 
 exports.aliasTopTours = (req, res, next) => {
   req.query.limit = 5;
