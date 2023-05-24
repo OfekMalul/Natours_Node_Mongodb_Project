@@ -1,6 +1,6 @@
 extends base
 
-mixin navItem(link, icon, text, active)
+mixin navItem(link, text, icon, active)
      li(class=`${active === true ? 'side-nav--active' :''}`)
         a(href=`${link}`)
             svg
@@ -12,8 +12,7 @@ block content
         .user-view
             nav.user-view__menu
                 ul.side-nav
-                    +navItem('#','settings','Settings', true)
-                    +navItem('#','My bookings','briefcase', false)
+                    +navItem('#','settings','settings', true)
                     +navItem('#','My bookings','briefcase', false)
                     +navItem('#','My reviews','star', false)
                     +navItem('#','Billing','credit-card', false)
